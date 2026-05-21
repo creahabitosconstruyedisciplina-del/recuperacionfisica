@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Recuperación — Válvula Mitral</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #1D9E75; --green-light: #E1F5EE; --green-mid: #9FE1CB; --green-dark: #0F6E56;
+      --amber-bg: #FAEEDA; --amber-text: #854F0B; --blue-bg: #E6F1FB; --blue-text: #185FA5;
+      --red-bg: #FDECEA; --red-text: #C0392B;
+      --bg: #ffffff; --bg2: #f5f5f2; --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+      --text: #1a1a18; --text2: #6b6b67; --radius: 12px; --radius-sm: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1c; --bg2: #2a2a28; --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.22);
+        --text: #f0ede8; --text2: #9a9994; --green-light: #063d2a; --amber-bg: #3d2a06;
+        --blue-bg: #071e36; --red-bg: #3d0a08;
+      }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; padding-bottom: 40px; }
+    header { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 1.25rem 1.5rem 0; position: sticky; top: 0; z-index: 10; }
+    .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 0.5rem; }
+    header h1 { font-size: 20px; font-weight: 500; }
+    header p { font-size: 13px; color: var(--text2); margin-bottom: 0.75rem; }
+    .nav { display: flex; gap: 0; overflow-x: auto; }
+    .nav-btn { padding: 10px 13px; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; white-space: nowrap; transition: color 0.15s, border-color 0.15s; font-family: inherit; }
+    .nav-btn.active { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
+    .nav-btn:hover { color: var(--text); }
+    main { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .section { display: none; }
+    .section.visible { display: block; }
+    h2 { font-size: 18px; font-weight: 500; margin-bottom: 1rem; }
+    h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+    .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 12px; }
+    .badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 12px; margin-bottom: 8px; font-weight: 500; }
+    .badge-green { background: var(--green-light); color: var(--green-dark); }
+    .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+    .badge-blue  { background: var(--blue-bg);  color: var(--blue-text); }
+    .badge-red   { background: var(--red-bg);   color: var(--red-text); }
+    label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 4px; margin-top: 14px; }
+    input[type=number], input[type=text], textarea, select { width: 100%; padding: 9px 11px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); font-size: 14px; background: var(--bg); color: var(--text); font-family: inherit; outline: none; transition: border-color 0.15s; }
+    input:focus, textarea:focus, select:focus { border-color: var(--green); }
+    textarea { resize: vertical; min-height: 70px; }
+    .feelings { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .feel-btn { padding: 7px 13px; border-radius: 20px; border: 0.5px solid var(--border2); background: transparent; cursor: pointer; font-size: 13px; color: var(--text2); transition: all 0.15s; font-family: inherit; }
+    .feel-btn.selected { border-color: var(--green); background: var(--green-light); color: var(--green-dark); font-weight: 500; }
+    .save-btn { margin-top: 1.25rem; padding: 11px 28px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .save-btn:hover { background: var(--green-dark); }
+    .tip { background: var(--green-light); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--green-dark); margin-bottom: 1rem; line-height: 1.5; }
+    .exercise-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 0.5px solid var(--border); }
+    .exercise-row:last-child { border-bottom: none; margin-bottom: 0; }
+    .exercise-row span { font-size: 14px; flex: 1; color: var(--text); }
+    .sets-reps { font-size: 12px; color: var(--text2); min-width: 55px; text-align: right; }
+    .weight-input { width: 72px !important; text-align: center; padding: 7px 6px !important; }
+    .history-entry { border-left: 2px solid var(--green); padding-left: 12px; margin-bottom: 18px; }
+    .history-date  { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+    .history-type  { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+    .history-feel  { font-size: 13px; color: var(--text2); }
+    .history-pesos { font-size: 13px; color: var(--text2); margin-top: 4px; }
+    .history-notas { font-size: 13px; color: var(--text2); margin-top: 4px; font-style: italic; }
+    .empty { text-align: center; padding: 3rem 0; color: var(--text2); font-size: 14px; line-height: 2; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+    .stat-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem 1rem; text-align: center; }
+    .stat-num   { font-size: 24px; font-weight: 500; color: var(--green); }
+    .stat-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 80px; margin-top: 10px; }
+    .bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+    .bar     { width: 100%; border-radius: 3px 3px 0 0; min-height: 3px; transition: height 0.4s; }
+    .bar-day { font-size: 11px; color: var(--text2); }
+    .progress-row { margin-bottom: 12px; }
+    .progress-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); margin-bottom: 5px; }
+    .progress-bar-wrap { background: var(--bg2); border-radius: 6px; height: 8px; overflow: hidden; }
+    .progress-bar { height: 8px; border-radius: 6px; transition: width 0.5s; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 11px 22px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 99; white-space: nowrap; }
+    .toast.show { opacity: 1; }
+    .ex-detail { font-size: 13px; color: var(--text2); margin: 4px 0 8px; line-height: 1.5; }
+    .ex-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .ex-tag { font-size: 12px; background: var(--bg2); padding: 3px 9px; border-radius: 8px; color: var(--text2); }
+
+    /* Semanas */
+    .week-tabs { display: flex; gap: 6px; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 2px; }
+    .week-tab { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--border2); background: transparent; cursor: pointer; font-size: 13px; color: var(--text2); white-space: nowrap; transition: all 0.15s; font-family: inherit; }
+    .week-tab.active { background: var(--green); color: white; border-color: var(--green); font-weight: 500; }
+    .week-plan { display: none; }
+    .week-plan.visible { display: block; }
+
+    /* Ejercicios personalizados */
+    .section-divider { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0 1rem; }
+    .section-divider span { font-size: 15px; font-weight: 500; white-space: nowrap; color: var(--text); }
+    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 0.5px; background: var(--border2); }
+    .custom-ex-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
+    .custom-ex-info { flex: 1; }
+    .custom-ex-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+    .custom-ex-detail { font-size: 13px; color: var(--text2); line-height: 1.4; }
+    .custom-ex-meta { font-size: 12px; color: var(--text2); margin-top: 5px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .custom-ex-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .icon-btn { padding: 6px 8px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: transparent; cursor: pointer; font-size: 14px; color: var(--text2); transition: all 0.15s; font-family: inherit; line-height: 1; }
+    .icon-btn:hover { background: var(--bg2); color: var(--text); }
+    .icon-btn.danger:hover { background: var(--red-bg); color: var(--red-text); border-color: var(--red-text); }
+    .add-ex-btn { width: 100%; padding: 11px; border: 1.5px dashed var(--green-mid); border-radius: var(--radius); background: transparent; color: var(--green); font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; margin-top: 8px; }
+    .add-ex-btn:hover { background: var(--green-light); border-style: solid; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 50; align-items: flex-end; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--bg); border-radius: var(--radius) var(--radius) 0 0; padding: 1.5rem 1.25rem 2rem; width: 100%; max-width: 680px; max-height: 92vh; overflow-y: auto; animation: slideUp 0.25s ease; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .modal-title { font-size: 16px; font-weight: 500; }
+    .close-btn { padding: 5px 10px; border: none; background: var(--bg2); border-radius: var(--radius-sm); cursor: pointer; font-size: 16px; color: var(--text2); font-family: inherit; }
+    .close-btn:hover { background: var(--border); }
+    .inline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Datos */
+    .data-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+    .secondary-btn { padding: 9px 16px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .secondary-btn:hover { background: var(--bg2); }
+
+    @media (max-width: 480px) {
+      main { padding: 1rem 0.75rem; }
+      .nav-btn { padding: 10px 9px; font-size: 12px; }
+      .inline-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top"><h1>Mi recuperación ❤️</h1></div>
+  <p>Seguimiento tras operación de válvula mitral</p>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="show('hoy')">📋 Hoy</button>
+    <button class="nav-btn" onclick="show('ejercicios')">🏋️ Ejercicios</button>
+    <button class="nav-btn" onclick="show('historial')">🕐 Historial</button>
+    <button class="nav-btn" onclick="show('progreso')">📈 Progreso</button>
+    <button class="nav-btn" onclick="show('datos')">💾 Datos</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HOY -->
+  <div id="hoy" class="section visible">
+    <div class="tip">💡 Recuerda: calienta siempre antes de empezar y para si sientes palpitaciones, mareo o dolor en el pecho.</div>
+    <div class="card">
+      <h3>Registro de hoy</h3>
+      <label>Tipo de actividad</label>
+      <select id="act-type" onchange="onTipoChange()">
+        <option value="paseo">Paseo</option>
+        <option value="fuerza">Ejercicios de fuerza</option>
+        <option value="estiramientos">Estiramientos</option>
+        <option value="fisio">Fisioterapia</option>
+        <option value="descanso">Descanso activo</option>
+        <option value="otro">Otro</option>
+      </select>
+      <label>Duración (minutos)</label>
+      <input type="number" id="duracion" min="1" max="300" placeholder="ej: 20" style="width:140px">
+      <div id="fuerza-section" style="display:none; margin-top:16px;">
+        <label style="margin-top:0; font-size:14px; font-weight:500; color:var(--text);">Pesos usados hoy (kg)</label>
+        <p style="font-size:12px; color:var(--text2); margin-bottom:10px;">Deja en blanco los ejercicios que no hayas hecho.</p>
+        <div id="ejercicios-form"></div>
+      </div>
+      <label>¿Cómo te has sentido?</label>
+      <div class="feelings">
+        <button class="feel-btn" onclick="toggleFeel(this)" data-v="Muy bien">😊 Muy bien</button>
+        <button class="feel-btn" onclick="toggleFeel(this)" data-v="Bien">🙂 Bien</button>
+        <button class="feel-btn" onclick="toggleFeel(this)" data-v="Regular">😐 Regular</button>
+        <button class="feel-btn" onclick="toggleFeel(this)" data-v="Cansada">😔 Cansada</button>
+        <button class="feel-btn" onclick="toggleFeel(this)" data-v="Con dolor">😣 Con dolor</button>
+      </div>
+      <label>Notas (opcional)</label>
+      <textarea id="notas" placeholder="¿Algo que quieras recordar de hoy?"></textarea>
+      <button class="save-btn" onclick="guardar()">✓ Guardar registro</button>
+    </div>
+  </div>
+
+  <!-- EJERCICIOS -->
+  <div id="ejercicios" class="section">
+    <h2>Plan de ejercicios</h2>
+    <div class="tip" id="semana-tip">🫀 Semana 1: pesos muy ligeros (0.5 kg), 2 series de 8–10 rep. El objetivo es activar los músculos sin sobrecargar el corazón.</div>
+
+    <div class="week-tabs">
+      <button class="week-tab active" onclick="setWeek(1,this)">Semana 1</button>
+      <button class="week-tab" onclick="setWeek(2,this)">Semana 2</button>
+      <button class="week-tab" onclick="setWeek(3,this)">Semana 3</button>
+      <button class="week-tab" onclick="setWeek(4,this)">Semana 4</button>
+    </div>
+
+    <!-- Semana 1 -->
+    <div class="week-plan visible" id="plan-1">
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Curl de bíceps</h3><p class="ex-detail">Con mancuerna ligera o botella de agua. Codo pegado al cuerpo, movimiento controlado.</p><div class="ex-meta"><span class="ex-tag">2 series × 10 rep</span><span class="ex-tag">0.5 kg</span></div></div>
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Elevación lateral de brazos</h3><p class="ex-detail">De pie o sentada. Brazos ligeramente flexionados. No subir por encima del hombro. Movimiento suave.</p><div class="ex-meta"><span class="ex-tag">2 series × 10 rep</span><span class="ex-tag">0.5 kg</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Sentadilla con silla</h3><p class="ex-detail">De pie delante de la silla, bajar lentamente hasta casi sentarse y volver a subir. Espalda recta.</p><div class="ex-meta"><span class="ex-tag">2 series × 8 rep</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Elevación de talones</h3><p class="ex-detail">De pie agarrada a una silla o pared. Subir de puntillas lentamente y bajar con control.</p><div class="ex-meta"><span class="ex-tag">2 series × 12 rep</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-amber">Core suave</span><h3>Contracción abdominal tumbada</h3><p class="ex-detail">Tumbada boca arriba, rodillas flexionadas. Contraer el abdomen suavemente aguantando 3 segundos y soltar. Sin levantar la cabeza.</p><div class="ex-meta"><span class="ex-tag">2 series × 8 rep</span><span class="ex-tag">Sin peso</span></div></div>
+    </div>
+
+    <!-- Semana 2 -->
+    <div class="week-plan" id="plan-2">
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Curl de bíceps</h3><p class="ex-detail">Sube una serie respecto a la semana 1. Mantén el movimiento controlado.</p><div class="ex-meta"><span class="ex-tag">3 series × 10 rep</span><span class="ex-tag">0.5–1 kg</span></div></div>
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Elevación lateral de brazos</h3><p class="ex-detail">Intenta subir ligeramente más el brazo si no hay molestias. Movimiento suave.</p><div class="ex-meta"><span class="ex-tag">3 series × 10 rep</span><span class="ex-tag">0.5–1 kg</span></div></div>
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Extensión de tríceps sentada ✨ nuevo</h3><p class="ex-detail">Sentada, brazo arriba doblado por detrás de la cabeza. Extender el codo hacia arriba con control. Alterna brazos.</p><div class="ex-meta"><span class="ex-tag">2 series × 10 rep</span><span class="ex-tag">0.5 kg</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Sentadilla con silla</h3><p class="ex-detail">Añade una serie. Asegúrate de bajar con control y subir sin ayudarte de las manos.</p><div class="ex-meta"><span class="ex-tag">3 series × 10 rep</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Elevación de talones</h3><p class="ex-detail">Aumenta repeticiones respecto a la semana 1. Buen ejercicio para la circulación.</p><div class="ex-meta"><span class="ex-tag">3 series × 15 rep</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-amber">Core suave</span><h3>Contracción abdominal tumbada</h3><p class="ex-detail">Aguanta 3 segundos en la contracción. Respiración constante, sin contener el aire.</p><div class="ex-meta"><span class="ex-tag">2 series × 10 rep</span><span class="ex-tag">Sin peso</span></div></div>
+    </div>
+
+    <!-- Semana 3 -->
+    <div class="week-plan" id="plan-3">
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Curl de bíceps</h3><p class="ex-detail">Movimiento más lento en la bajada (excéntrico). Controla el peso durante todo el recorrido.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep</span><span class="ex-tag">1 kg</span></div></div>
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Elevación lateral de brazos</h3><p class="ex-detail">Llega a la altura del hombro si no hay molestias. Si notas tensión en el pecho, baja el peso.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep</span><span class="ex-tag">1 kg</span></div></div>
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Extensión de tríceps sentada</h3><p class="ex-detail">Sentada, brazo arriba doblado por detrás de la cabeza. Sube una serie respecto a la semana pasada.</p><div class="ex-meta"><span class="ex-tag">3 series × 10 rep</span><span class="ex-tag">0.5–1 kg</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Sentadilla con silla</h3><p class="ex-detail">Baja más profundo si te sientes cómoda. Puedes separar ligeramente los pies.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep</span><span class="ex-tag">Sin peso o 0.5 kg c/mano</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Elevación de talones</h3><p class="ex-detail">Esta semana prueba más lento: 2 seg subiendo, 2 seg bajando.</p><div class="ex-meta"><span class="ex-tag">3 series × 15 rep</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Extensión de pierna sentada ✨ nuevo</h3><p class="ex-detail">Sentada en una silla, extender una pierna hasta quedar recta, aguantar 2 seg y bajar. Alterna piernas.</p><div class="ex-meta"><span class="ex-tag">2 series × 10 rep c/pierna</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-amber">Core suave</span><h3>Contracción abdominal tumbada</h3><p class="ex-detail">Aguanta 5 segundos en lugar de 3. Respiración constante, sin contener el aire.</p><div class="ex-meta"><span class="ex-tag">3 series × 10 rep</span><span class="ex-tag">Sin peso</span></div></div>
+    </div>
+
+    <!-- Semana 4 -->
+    <div class="week-plan" id="plan-4">
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Curl de bíceps</h3><p class="ex-detail">Si te encuentras bien, prueba a aumentar el peso ligeramente. Siempre escuchando al cuerpo.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep</span><span class="ex-tag">1–1.5 kg</span></div></div>
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Elevación lateral de brazos</h3><p class="ex-detail">Movimiento controlado. Si notas tensión en el pecho o el hombro, reduce el peso.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep</span><span class="ex-tag">1–1.5 kg</span></div></div>
+      <div class="card"><span class="badge badge-green">Brazos y hombros</span><h3>Extensión de tríceps sentada</h3><p class="ex-detail">Movimiento más lento y controlado. Siente bien el músculo en todo el recorrido.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep</span><span class="ex-tag">1 kg</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Sentadilla con silla</h3><p class="ex-detail">Intenta no apoyarte en la silla al bajar. Aumenta el control excéntrico (bajar lento).</p><div class="ex-meta"><span class="ex-tag">3 series × 15 rep</span><span class="ex-tag">Sin peso o 0.5–1 kg c/mano</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Elevación de talones</h3><p class="ex-detail">Puedes probar con una sola pierna si te sientes segura, alternando.</p><div class="ex-meta"><span class="ex-tag">3 series × 20 rep</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-blue">Piernas</span><h3>Extensión de pierna sentada</h3><p class="ex-detail">Aguanta 3 segundos arriba antes de bajar. Alterna piernas con control.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep c/pierna</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card"><span class="badge badge-amber">Core suave</span><h3>Contracción abdominal tumbada</h3><p class="ex-detail">Aguanta 5–6 segundos. Respiración constante y fluida durante todo el ejercicio.</p><div class="ex-meta"><span class="ex-tag">3 series × 12 rep</span><span class="ex-tag">Sin peso</span></div></div>
+      <div class="card" style="background: var(--green-light); border-color: var(--green-mid);">
+        <span class="badge badge-green">🎯 Fin del mes 1</span>
+        <h3>¡Un mes completado!</h3>
+        <p class="ex-detail" style="color: var(--green-dark);">Es el momento de exportar tus datos y compartirlos con Claude para planificar el mes 2 con ejercicios adaptados a tu progreso real. 💪</p>
+        <button class="save-btn" style="margin-top:12px; padding: 8px 16px; font-size:13px;" onclick="show('datos')">💾 Exportar mis datos</button>
+      </div>
+    </div>
+
+    <!-- Ejercicios personalizados -->
+    <div class="section-divider"><span>✨ Mis ejercicios añadidos</span></div>
+    <div id="custom-exercises-list"></div>
+    <button class="add-ex-btn" onclick="openModal()">+ Añadir mi propio ejercicio</button>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="historial" class="section">
+    <h2>Historial de entrenamientos</h2>
+    <div id="historial-lista"></div>
+  </div>
+
+  <!-- PROGRESO -->
+  <div id="progreso" class="section">
+    <h2>Mi progreso</h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-label">sesiones</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-semana">0</div><div class="stat-label">esta semana</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-minutos">0</div><div class="stat-label">min totales</div></div>
+    </div>
+    <div class="card"><h3>Actividad últimos 7 días</h3><div class="chart-bars" id="chart-days"></div></div>
+    <div class="card"><h3>¿Cómo me he sentido?</h3><div id="sensaciones-bars" style="margin-top:10px;"></div></div>
+  </div>
+
+  <!-- DATOS -->
+  <div id="datos" class="section">
+    <h2>Mis datos</h2>
+    <div class="tip">📦 Exporta tus datos para guardarlos o compartirlos con Claude al empezar el mes 2. También puedes importar datos de sesiones anteriores sin perder nada.</div>
+
+    <div class="card">
+      <h3>💾 Exportar datos</h3>
+      <p style="font-size:13px; color:var(--text2); margin-top:6px; line-height:1.5;">Descarga un archivo con todos tus registros, historial y ejercicios personalizados.</p>
+      <div class="data-actions">
+        <button class="save-btn" onclick="exportarJSON()" style="margin-top:0;">⬇️ Descargar .json</button>
+        <button class="secondary-btn" onclick="copiarParaClaude()">📋 Copiar resumen para Claude</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📂 Importar datos</h3>
+      <p style="font-size:13px; color:var(--text2); margin-top:6px; line-height:1.5;">Carga un archivo .json exportado anteriormente. Los registros nuevos se fusionarán con los actuales sin borrar nada.</p>
+      <div class="data-actions">
+        <input type="file" id="import-file" accept=".json" onchange="importarJSON(event)" style="display:none">
+        <button class="secondary-btn" onclick="document.getElementById('import-file').click()">📂 Seleccionar archivo</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🗑️ Borrar todos los datos</h3>
+      <p style="font-size:13px; color:var(--text2); margin-top:6px; line-height:1.5;">Elimina todos los registros guardados. Exporta antes si quieres conservarlos.</p>
+      <div class="data-actions">
+        <button class="secondary-btn" style="color: var(--red-text); border-color: var(--red-text);" onclick="borrarTodo()">🗑️ Borrar todo</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Modal añadir/editar ejercicio -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalIfOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Añadir ejercicio</span>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <input type="hidden" id="edit-ex-id">
+    <label>Nombre del ejercicio *</label>
+    <input type="text" id="ex-nombre" placeholder="ej: Press de hombros sentada">
+    <label>Descripción / instrucciones</label>
+    <textarea id="ex-desc" placeholder="Cómo hacerlo, qué cuidar..." style="min-height:80px;"></textarea>
+    <div class="inline-grid" style="margin-top:14px;">
+      <div>
+        <label style="margin-top:0;">Series × Repeticiones</label>
+        <input type="text" id="ex-series" placeholder="ej: 3×10">
+      </div>
+      <div>
+        <label style="margin-top:0;">Peso inicial</label>
+        <input type="text" id="ex-peso" placeholder="ej: 1 kg / Sin peso">
+      </div>
+    </div>
+    <label>Categoría</label>
+    <select id="ex-categoria">
+      <option value="green">Brazos y hombros</option>
+      <option value="blue">Piernas</option>
+      <option value="amber">Core suave</option>
+      <option value="red">Otro</option>
+    </select>
+    <button class="save-btn" onclick="guardarEjercicio()" style="width:100%; margin-top:1.5rem;">✓ Guardar ejercicio</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Guardado</div>
+
+<script>
+  const TIPO_LABEL = { paseo:'Paseo', fuerza:'Ejercicios de fuerza', estiramientos:'Estiramientos', fisio:'Fisioterapia', descanso:'Descanso activo', otro:'Actividad' };
+  const FEEL_COLORS = { 'Muy bien':'#1D9E75','Bien':'#5DCAA5','Regular':'#EF9F27','Cansada':'#E24B4A','Con dolor':'#A32D2D' };
+  const CAT_LABEL = { green:'Brazos y hombros', blue:'Piernas', amber:'Core suave', red:'Otro' };
+
+  const BASE_EXERCISES = [
+    { id:'biceps',     name:'Curl de bíceps',               sets:'3×10' },
+    { id:'lateral',    name:'Elevación lateral de brazos',  sets:'3×10' },
+    { id:'sentadilla', name:'Sentadilla con silla',          sets:'3×10' },
+    { id:'talones',    name:'Elevación de talones',          sets:'3×15' },
+    { id:'abdominal',  name:'Contracción abdominal',         sets:'2×10' },
+    { id:'triceps',    name:'Extensión de tríceps sentada',  sets:'3×10' },
+    { id:'extension',  name:'Extensión de pierna sentada',   sets:'2×10' }
+  ];
+
+  let registros       = JSON.parse(localStorage.getItem('mitral_registros')       || '[]');
+  let customExercises = JSON.parse(localStorage.getItem('mitral_custom_exercises') || '[]');
+  let selectedFeel    = '';
+  let editingId       = null;
+
+  function show(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('visible');
+    const idx = ['hoy','ejercicios','historial','progreso','datos'].indexOf(id);
+    if (idx >= 0) document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+    if (id === 'historial')  renderHistorial();
+    if (id === 'progreso')   renderProgreso();
+    if (id === 'ejercicios') renderCustomExercises();
+  }
+
+  function setWeek(n, btn) {
+    document.querySelectorAll('.week-plan').forEach(p => p.classList.remove('visible'));
+    document.querySelectorAll('.week-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('plan-' + n).classList.add('visible');
+    btn.classList.add('active');
+    const tips = [
+      '🫀 Semana 1: pesos muy ligeros (0.5 kg), 2 series de 8–10 rep. El objetivo es activar los músculos sin sobrecargar el corazón.',
+      '🫀 Semana 2: subimos una serie y añadimos un ejercicio nuevo. Si notas fatiga inusual, vuelve a los volúmenes de la semana 1.',
+      '🫀 Semana 3: más repeticiones y ejercicio nuevo de pierna. Sube el peso solo si las series se sienten cómodas.',
+      '🫀 Semana 4: consolidación del mes. Al terminar, exporta tus datos para planificar el mes 2 con Claude. 💪'
+    ];
+    document.getElementById('semana-tip').textContent = tips[n-1];
+  }
+
+  function onTipoChange() {
+    const tipo = document.getElementById('act-type').value;
+    const sec  = document.getElementById('fuerza-section');
+    if (tipo === 'fuerza') { sec.style.display = 'block'; renderEjerciciosForm(); }
+    else sec.style.display = 'none';
+  }
+
+  function getAllExercises() {
+    return [
+      ...BASE_EXERCISES,
+      ...customExercises.map(e => ({ id:'custom_'+e.id, name:e.nombre, sets:e.series||'' }))
+    ];
+  }
+
+  function renderEjerciciosForm() {
+    document.getElementById('ejercicios-form').innerHTML = getAllExercises().map(e => `
+      <div class="exercise-row">
+        <span>${e.name}</span>
+        <span class="sets-reps">${e.sets}</span>
+        <input type="number" class="weight-input" id="w-${e.id}" min="0" max="100" step="0.5" placeholder="kg">
+      </div>`).join('');
+  }
+
+  function toggleFeel(btn) {
+    document.querySelectorAll('.feel-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedFeel = btn.dataset.v;
+  }
+
+  function guardar() {
+    const tipo   = document.getElementById('act-type').value;
+    const durStr = document.getElementById('duracion').value;
+    const notas  = document.getElementById('notas').value.trim();
+    const pesos  = {};
+    if (tipo === 'fuerza') {
+      getAllExercises().forEach(e => {
+        const el = document.getElementById('w-'+e.id);
+        if (el && el.value !== '') pesos[e.name] = parseFloat(el.value);
+      });
+    }
+    registros.unshift({ fecha: new Date().toISOString(), tipo, duracion: durStr ? parseInt(durStr) : null, sensacion: selectedFeel, notas, pesos });
+    localStorage.setItem('mitral_registros', JSON.stringify(registros));
+    document.getElementById('duracion').value = '';
+    document.getElementById('notas').value    = '';
+    document.getElementById('act-type').value = 'paseo';
+    document.getElementById('fuerza-section').style.display = 'none';
+    document.querySelectorAll('.feel-btn').forEach(b => b.classList.remove('selected'));
+    selectedFeel = '';
+    showToast('✓ Registro guardado correctamente');
+  }
+
+  function renderHistorial() {
+    const el = document.getElementById('historial-lista');
+    if (!registros.length) { el.innerHTML = '<div class="empty">📋<br>Aún no hay registros.<br>¡Empieza hoy con el primer registro!</div>'; return; }
+    el.innerHTML = registros.map(r => {
+      const d = new Date(r.fecha);
+      const fechaStr = d.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      const horaStr  = d.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
+      const pesosStr = Object.entries(r.pesos||{}).map(([k,v]) => `${k}: <strong>${v} kg</strong>`).join(' · ');
+      return `<div class="history-entry">
+        <div class="history-date">${fechaStr} a las ${horaStr}${r.duracion?' · '+r.duracion+' min':''}</div>
+        <div class="history-type">${TIPO_LABEL[r.tipo]||r.tipo}</div>
+        ${r.sensacion ? `<div class="history-feel">${r.sensacion}</div>` : ''}
+        ${pesosStr    ? `<div class="history-pesos">${pesosStr}</div>` : ''}
+        ${r.notas     ? `<div class="history-notas">"${r.notas}"</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  function renderProgreso() {
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const semanaAtras = new Date(hoy); semanaAtras.setDate(hoy.getDate()-7);
+    document.getElementById('s-total').textContent  = registros.length;
+    document.getElementById('s-semana').textContent = registros.filter(r => new Date(r.fecha) >= semanaAtras).length;
+    document.getElementById('s-minutos').textContent= registros.reduce((a,r) => a+(r.duracion||0), 0);
+    const days=['L','M','X','J','V','S','D'], counts=Array(7).fill(0);
+    for(let i=0;i<7;i++){const d=new Date(hoy);d.setDate(hoy.getDate()-(6-i));counts[i]=registros.filter(r=>new Date(r.fecha).toDateString()===d.toDateString()).length;}
+    const maxC=Math.max(...counts,1), todayDow=(hoy.getDay()+6)%7;
+    document.getElementById('chart-days').innerHTML=counts.map((c,i)=>{
+      const di=(todayDow-6+i+7)%7,h=Math.round(c/maxC*68)+3,color=i===6?'#1D9E75':'#9FE1CB';
+      return `<div class="bar-col"><div class="bar" style="height:${h}px;background:${color};"></div><div class="bar-day">${days[di]}</div></div>`;
+    }).join('');
+    const feels=['Muy bien','Bien','Regular','Cansada','Con dolor'],fcounts=feels.map(f=>registros.filter(r=>r.sensacion===f).length),maxF=Math.max(...fcounts,1);
+    document.getElementById('sensaciones-bars').innerHTML=feels.map((f,i)=>`
+      <div class="progress-row"><div class="progress-meta"><span>${f}</span><span>${fcounts[i]} ${fcounts[i]===1?'vez':'veces'}</span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${Math.round(fcounts[i]/maxF*100)}%;background:${FEEL_COLORS[f]};"></div></div></div>`).join('');
+  }
+
+  function renderCustomExercises() {
+    const el = document.getElementById('custom-exercises-list');
+    if (!customExercises.length) { el.innerHTML='<p style="font-size:13px;color:var(--text2);text-align:center;padding:1rem 0;">Todavía no has añadido ejercicios propios.</p>'; return; }
+    el.innerHTML = customExercises.map(e => `
+      <div class="custom-ex-card">
+        <div class="custom-ex-info">
+          <span class="badge badge-${e.categoria||'green'}">${CAT_LABEL[e.categoria]||'Otro'}</span>
+          <div class="custom-ex-name">${e.nombre}</div>
+          ${e.descripcion?`<div class="custom-ex-detail">${e.descripcion}</div>`:''}
+          <div class="custom-ex-meta">
+            ${e.series?`<span class="ex-tag">${e.series}</span>`:''}
+            ${e.peso?`<span class="ex-tag">${e.peso}</span>`:''}
+          </div>
+        </div>
+        <div class="custom-ex-actions">
+          <button class="icon-btn" onclick="editarEjercicio('${e.id}')">✏️</button>
+          <button class="icon-btn danger" onclick="eliminarEjercicio('${e.id}')">🗑️</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function openModal(editId) {
+    editingId = editId || null;
+    document.getElementById('modal-title').textContent = editId ? 'Editar ejercicio' : 'Añadir ejercicio';
+    if (editId) {
+      const ex = customExercises.find(e => e.id===editId);
+      if (ex) {
+        document.getElementById('ex-nombre').value    = ex.nombre||'';
+        document.getElementById('ex-desc').value      = ex.descripcion||'';
+        document.getElementById('ex-series').value    = ex.series||'';
+        document.getElementById('ex-peso').value      = ex.peso||'';
+        document.getElementById('ex-categoria').value = ex.categoria||'green';
+      }
+    } else {
+      ['ex-nombre','ex-desc','ex-series','ex-peso'].forEach(id => document.getElementById(id).value='');
+      document.getElementById('ex-categoria').value='green';
+    }
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingId=null; }
+  function closeModalIfOutside(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+  function guardarEjercicio() {
+    const nombre = document.getElementById('ex-nombre').value.trim();
+    if (!nombre) { alert('Por favor escribe el nombre del ejercicio.'); return; }
+    const data = { id: editingId||('ex_'+Date.now()), nombre, descripcion: document.getElementById('ex-desc').value.trim(), series: document.getElementById('ex-series').value.trim(), peso: document.getElementById('ex-peso').value.trim(), categoria: document.getElementById('ex-categoria').value };
+    if (editingId) { const idx=customExercises.findIndex(e=>e.id===editingId); if(idx>=0) customExercises[idx]=data; }
+    else customExercises.push(data);
+    localStorage.setItem('mitral_custom_exercises', JSON.stringify(customExercises));
+    closeModal(); renderCustomExercises();
+    showToast(editingId ? '✓ Ejercicio actualizado' : '✓ Ejercicio añadido');
+  }
+
+  function editarEjercicio(id) { openModal(id); }
+
+  function eliminarEjercicio(id) {
+    if (!confirm('¿Eliminar este ejercicio?')) return;
+    customExercises = customExercises.filter(e => e.id!==id);
+    localStorage.setItem('mitral_custom_exercises', JSON.stringify(customExercises));
+    renderCustomExercises(); showToast('🗑️ Ejercicio eliminado');
+  }
+
+  function exportarJSON() {
+    const datos = { version:2, fecha_exportacion: new Date().toISOString(), registros, ejercicios_personalizados: customExercises };
+    const blob = new Blob([JSON.stringify(datos,null,2)],{type:'application/json'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href=url; a.download='mi_recuperacion_'+new Date().toISOString().split('T')[0]+'.json'; a.click();
+    URL.revokeObjectURL(url); showToast('⬇️ Archivo descargado');
+  }
+
+  function copiarParaClaude() {
+    const fuerza = registros.filter(r=>r.tipo==='fuerza');
+    const maxPesos = {};
+    fuerza.forEach(r => { Object.entries(r.pesos||{}).forEach(([k,v]) => { if(!maxPesos[k]||v>maxPesos[k]) maxPesos[k]=v; }); });
+    const pesosStr = Object.entries(maxPesos).map(([k,v])=>`- ${k}: ${v} kg`).join('\n')||'- Sin registros de peso aún';
+    const sensCount = {};
+    registros.forEach(r=>{if(r.sensacion) sensCount[r.sensacion]=(sensCount[r.sensacion]||0)+1;});
+    const sensStr = Object.entries(sensCount).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`- ${k}: ${v} veces`).join('\n')||'- Sin datos';
+    const customStr = customExercises.length ? customExercises.map(e=>`- ${e.nombre} (${e.series||''}, ${e.peso||''})`).join('\n') : '- Ninguno';
+    const notasStr  = registros.filter(r=>r.notas).slice(0,5).map(r=>`- ${r.notas}`).join('\n')||'- Sin notas';
+    const txt = `RESUMEN DE MI RECUPERACIÓN — VÁLVULA MITRAL\nExportado el ${new Date().toLocaleDateString('es-ES')}\n\n📊 ESTADÍSTICAS GENERALES\n- Total sesiones: ${registros.length}\n- Sesiones de fuerza: ${fuerza.length}\n- Paseos: ${registros.filter(r=>r.tipo==='paseo').length}\n- Minutos totales: ${registros.reduce((a,r)=>a+(r.duracion||0),0)}\n\n💪 PESOS MÁXIMOS ALCANZADOS\n${pesosStr}\n\n😊 SENSACIONES\n${sensStr}\n\n✨ EJERCICIOS PERSONALIZADOS\n${customStr}\n\n📝 ÚLTIMAS NOTAS\n${notasStr}\n\n---\nPor favor ayúdame a planificar el siguiente mes de ejercicios basándote en este progreso.`;
+    navigator.clipboard.writeText(txt).then(()=>showToast('📋 Copiado al portapapeles')).catch(()=>{
+      const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('📋 Copiado al portapapeles');
+    });
+  }
+
+  function importarJSON(event) {
+    const file=event.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try {
+        const datos=JSON.parse(e.target.result); let importados=0;
+        if(datos.registros&&Array.isArray(datos.registros)){
+          const existing=new Set(registros.map(r=>r.fecha));
+          const nuevos=datos.registros.filter(r=>!existing.has(r.fecha));
+          registros=[...registros,...nuevos].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+          localStorage.setItem('mitral_registros',JSON.stringify(registros)); importados+=nuevos.length;
+        }
+        if(datos.ejercicios_personalizados&&Array.isArray(datos.ejercicios_personalizados)){
+          const existIds=new Set(customExercises.map(e=>e.id));
+          const nuevosEx=datos.ejercicios_personalizados.filter(e=>!existIds.has(e.id));
+          customExercises=[...customExercises,...nuevosEx];
+          localStorage.setItem('mitral_custom_exercises',JSON.stringify(customExercises));
+        }
+        showToast('✓ Importados '+importados+' registros nuevos'); event.target.value='';
+      } catch(err){ alert('Error al leer el archivo. Asegúrate de que es un .json exportado desde esta app.'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function borrarTodo() {
+    if(!confirm('¿Segura que quieres borrar TODOS los datos? No se puede deshacer.\n\nExporta antes si quieres conservarlos.')) return;
+    registros=[]; customExercises=[];
+    localStorage.removeItem('mitral_registros'); localStorage.removeItem('mitral_custom_exercises');
+    showToast('🗑️ Todos los datos eliminados');
+  }
+
+  function showToast(msg) {
+    const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2400);
+  }
+</script>
+</body>
+</html>
